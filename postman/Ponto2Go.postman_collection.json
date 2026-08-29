@@ -24,6 +24,7 @@
       "item": [
         {
           "name": "Registro - Parceiro",
+          "description": "O usuário parceiro_demo já existe por causa do seed automático do backend (docker compose up). Rodar isso de novo vai dar 400 (username duplicado) — normal, é só pra documentar o endpoint. O login abaixo é o que importa pro resto da collection.",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -36,18 +37,7 @@
         },
         {
           "name": "Registro - Destinatário",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var data = pm.response.json();",
-                  "pm.collectionVariables.set('destinatario_id', data.id);",
-                  "pm.test('status 201', () => pm.response.code === 201);"
-                ]
-              }
-            }
-          ],
+          "description": "O usuário cliente_demo já existe por causa do seed automático do backend (docker compose up). Rodar isso de novo vai dar 400 (username duplicado) — normal, é só pra documentar o endpoint. O destinatario_id usado no resto da collection vem do Login abaixo, não daqui.",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -91,7 +81,9 @@
                 "exec": [
                   "var data = pm.response.json();",
                   "pm.collectionVariables.set('access_token_destinatario', data.access);",
-                  "pm.collectionVariables.set('refresh_token_destinatario', data.refresh);"
+                  "pm.collectionVariables.set('refresh_token_destinatario', data.refresh);",
+                  "var payload = JSON.parse(atob(data.access.split('.')[1]));",
+                  "pm.collectionVariables.set('destinatario_id', payload.user_id);"
                 ]
               }
             }

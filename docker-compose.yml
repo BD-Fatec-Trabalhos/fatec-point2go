@@ -20,7 +20,7 @@ services:
     build: .
     command: >
       sh -c "python manage.py migrate --no-input &&
-             python manage.py seed_areas_restricao &&
+             python manage.py seed_demo &&
              python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
