@@ -1,0 +1,120 @@
+import type { Parceiro, PontoRetirada, Encomenda, Movimentacao } from "@/types";
+
+export const parceirosSeed: Parceiro[] = [
+  {
+    id: "p1",
+    nomeFantasia: "Mercadinho Bela Vista",
+    razaoSocial: "Bela Vista Comércio de Alimentos Ltda",
+    cnpj: "12.345.678/0001-90",
+    responsavel: "Marta Souza",
+    telefone: "(14) 99123-4567",
+    email: "contato@belavista.com.br",
+    endereco: { cep: "17010-000", logradouro: "Rua das Flores", numero: "120", bairro: "Centro", cidade: "Bauru", uf: "SP" },
+    ativo: true,
+    criadoEm: "2026-03-02",
+  },
+  {
+    id: "p2",
+    nomeFantasia: "Farmácia Vida Nova",
+    razaoSocial: "Vida Nova Farmácia e Manipulação Ltda",
+    cnpj: "98.765.432/0001-11",
+    responsavel: "Carlos Andrade",
+    telefone: "(14) 99876-5432",
+    email: "carlos@vidanova.com.br",
+    endereco: { cep: "17015-200", logradouro: "Av. Nações Unidas", numero: "845", bairro: "Jardim Panorama", cidade: "Bauru", uf: "SP" },
+    ativo: true,
+    criadoEm: "2026-04-11",
+  },
+];
+
+export const pontosSeed: PontoRetirada[] = [
+  {
+    id: "pt1",
+    nome: "Mercadinho Bela Vista - Centro",
+    parceiroId: "p1",
+    endereco: { cep: "17010-000", logradouro: "Rua das Flores", numero: "120", bairro: "Centro", cidade: "Bauru", uf: "SP" },
+    capacidade: 60,
+    ocupacaoAtual: 37,
+    horarioAbertura: "08:00",
+    horarioFechamento: "19:00",
+    diasFuncionamento: ["seg", "ter", "qua", "qui", "sex", "sab"],
+    disponivel: true,
+  },
+  {
+    id: "pt2",
+    nome: "Farmácia Vida Nova - Jd. Panorama",
+    parceiroId: "p2",
+    endereco: { cep: "17015-200", logradouro: "Av. Nações Unidas", numero: "845", bairro: "Jardim Panorama", cidade: "Bauru", uf: "SP" },
+    capacidade: 40,
+    ocupacaoAtual: 40,
+    horarioAbertura: "07:30",
+    horarioFechamento: "20:00",
+    diasFuncionamento: ["seg", "ter", "qua", "qui", "sex", "sab", "dom"],
+    disponivel: false,
+  },
+];
+
+export const encomendasSeed: Encomenda[] = [
+  {
+    id: "e1",
+    codigoRastreio: "BR123456789PD",
+    destinatarioNome: "João Pedro Lima",
+    destinatarioDocumento: "123.456.789-00",
+    destinatarioTelefone: "(14) 99111-2233",
+    pontoRetiradaId: "pt1",
+    status: "disponivel_para_retirada",
+    criadaEm: "2026-08-20",
+    atualizadaEm: "2026-08-22",
+  },
+  {
+    id: "e2",
+    codigoRastreio: "BR987654321PD",
+    destinatarioNome: "Ana Beatriz Rocha",
+    destinatarioDocumento: "987.654.321-00",
+    destinatarioTelefone: "(14) 99222-3344",
+    pontoRetiradaId: "pt1",
+    status: "recebida_no_ponto",
+    criadaEm: "2026-08-24",
+    atualizadaEm: "2026-08-24",
+  },
+  {
+    id: "e3",
+    codigoRastreio: "BR555222999PD",
+    destinatarioNome: "Marcos Vinícius Alves",
+    destinatarioDocumento: "555.222.999-00",
+    destinatarioTelefone: "(14) 99333-4455",
+    pontoRetiradaId: "pt2",
+    status: "retirada",
+    criadaEm: "2026-08-15",
+    atualizadaEm: "2026-08-18",
+  },
+];
+
+export const movimentacoesSeed: Movimentacao[] = [
+  {
+    id: "m1",
+    encomendaId: "e1",
+    tipo: "entrada_no_ponto",
+    pontoDestinoId: "pt1",
+    responsavel: "Marta Souza",
+    dataHora: "2026-08-20T09:15:00",
+  },
+  {
+    id: "m2",
+    encomendaId: "e1",
+    tipo: "transferencia",
+    pontoOrigemId: "pt1",
+    pontoDestinoId: "pt1",
+    responsavel: "Marta Souza",
+    observacao: "Reorganização interna do estoque",
+    dataHora: "2026-08-22T14:40:00",
+  },
+  {
+    id: "m3",
+    encomendaId: "e3",
+    tipo: "retirada_destinatario",
+    pontoOrigemId: "pt2",
+    responsavel: "Carlos Andrade",
+    dataHora: "2026-08-18T17:05:00",
+  },
+];
