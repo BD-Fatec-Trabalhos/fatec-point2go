@@ -1,0 +1,11 @@
+# Backend (Python/Django)
+backend/.venv/
+backend/.env
+backend/db.sqlite3
+**/__pycache__/
+*.pyc
+
+# Frontend (Node/Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env

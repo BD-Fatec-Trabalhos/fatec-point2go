@@ -1,0 +1,268 @@
+{
+  "info": {
+    "_postman_id": "b7f2a6d0-1a2b-4c3d-9e5f-ponto2go0001",
+    "name": "Ponto2Go API",
+    "description": "Fluxo de teste do backend Ponto2Go. Rode as pastas na ordem: Auth -> Pontos -> Encomendas. Os requests já salvam tokens e IDs em variáveis da collection, então não precisa copiar nada manualmente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "access_token_parceiro", "value": "" },
+    { "key": "refresh_token_parceiro", "value": "" },
+    { "key": "access_token_destinatario", "value": "" },
+    { "key": "refresh_token_destinatario", "value": "" },
+    { "key": "destinatario_id", "value": "" },
+    { "key": "ponto_id", "value": "" },
+    { "key": "area_restricao_id", "value": "" },
+    { "key": "encomenda_id", "value": "" },
+    { "key": "codigo_rastreio", "value": "" },
+    { "key": "codigo_rastreio_novo", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Registro - Parceiro",
+          "description": "O usuário parceiro_demo já existe por causa do seed automático do backend (docker compose up). Rodar isso de novo vai dar 400 (username duplicado) — normal, é só pra documentar o endpoint. O login abaixo é o que importa pro resto da collection.",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"parceiro_demo\",\n  \"password\": \"senha12345\",\n  \"email\": \"parceiro@teste.com\",\n  \"tipo\": \"parceiro\",\n  \"cpf\": \"11122233344\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/registro", "host": ["{{base_url}}"], "path": ["auth", "registro"] }
+          }
+        },
+        {
+          "name": "Registro - Destinatário",
+          "description": "O usuário cliente_demo já existe por causa do seed automático do backend (docker compose up). Rodar isso de novo vai dar 400 (username duplicado) — normal, é só pra documentar o endpoint. O destinatario_id usado no resto da collection vem do Login abaixo, não daqui.",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"cliente_demo\",\n  \"password\": \"senha12345\",\n  \"email\": \"cliente@teste.com\",\n  \"tipo\": \"destinatario\",\n  \"cpf\": \"55566677788\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/registro", "host": ["{{base_url}}"], "path": ["auth", "registro"] }
+          }
+        },
+        {
+          "name": "Login - Parceiro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('access_token_parceiro', data.access);",
+                  "pm.collectionVariables.set('refresh_token_parceiro', data.refresh);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"parceiro_demo\",\n  \"password\": \"senha12345\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Destinatário",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('access_token_destinatario', data.access);",
+                  "pm.collectionVariables.set('refresh_token_destinatario', data.refresh);",
+                  "var payload = JSON.parse(atob(data.access.split('.')[1]));",
+                  "pm.collectionVariables.set('destinatario_id', payload.user_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"cliente_demo\",\n  \"password\": \"senha12345\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Refresh Token - Parceiro",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token_parceiro}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login/refresh", "host": ["{{base_url}}"], "path": ["auth", "login", "refresh"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pontos",
+      "item": [
+        {
+          "name": "Cadastrar Ponto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('ponto_id', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_parceiro}}" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Papelaria Central\",\n  \"endereco\": {\n    \"rua\": \"Rua Batista de Carvalho\",\n    \"numero\": \"500\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Bauru\",\n    \"uf\": \"SP\",\n    \"cep\": \"17010120\",\n    \"latitude\": \"-22.314900\",\n    \"longitude\": \"-49.060700\"\n  },\n  \"horario_funcionamento\": \"08h-18h\",\n  \"capacidade_total\": 20\n}"
+            },
+            "url": { "raw": "{{base_url}}/pontos/", "host": ["{{base_url}}"], "path": ["pontos", ""] }
+          }
+        },
+        {
+          "name": "Listar Pontos",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_parceiro}}" }] },
+            "url": { "raw": "{{base_url}}/pontos/", "host": ["{{base_url}}"], "path": ["pontos", ""] }
+          }
+        },
+        {
+          "name": "Detalhe do Ponto",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_parceiro}}" }] },
+            "url": {
+              "raw": "{{base_url}}/pontos/{{ponto_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["pontos", "{{ponto_id}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Listar Áreas de Restrição",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_parceiro}}" }] },
+            "url": { "raw": "{{base_url}}/areas-restricao/", "host": ["{{base_url}}"], "path": ["areas-restricao", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Encomendas",
+      "item": [
+        {
+          "name": "Registrar Recebimento",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('codigo_rastreio_novo', 'BR' + Math.floor(Math.random() * 1000000000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('encomenda_id', data.id);",
+                  "pm.collectionVariables.set('codigo_rastreio', data.codigo_rastreio);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_parceiro}}" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo_rastreio\": \"{{codigo_rastreio_novo}}\",\n  \"destinatario_id\": {{destinatario_id}},\n  \"ponto_id\": {{ponto_id}}\n}"
+            },
+            "url": { "raw": "{{base_url}}/encomendas/", "host": ["{{base_url}}"], "path": ["encomendas", ""] }
+          }
+        },
+        {
+          "name": "Minhas Encomendas - Parceiro",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_parceiro}}" }] },
+            "url": { "raw": "{{base_url}}/encomendas/", "host": ["{{base_url}}"], "path": ["encomendas", ""] }
+          }
+        },
+        {
+          "name": "Minhas Encomendas - Destinatário",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_destinatario}}" }] },
+            "url": { "raw": "{{base_url}}/encomendas/", "host": ["{{base_url}}"], "path": ["encomendas", ""] }
+          }
+        },
+        {
+          "name": "Rastreio",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_destinatario}}" }] },
+            "url": {
+              "raw": "{{base_url}}/encomendas/{{codigo_rastreio}}/rastreio",
+              "host": ["{{base_url}}"],
+              "path": ["encomendas", "{{codigo_rastreio}}", "rastreio"]
+            }
+          }
+        },
+        {
+          "name": "Atualizar Status (retirada confirmada)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_parceiro}}" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"novo_status\": \"retirada_confirmada\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/encomendas/{{encomenda_id}}/status/",
+              "host": ["{{base_url}}"],
+              "path": ["encomendas", "{{encomenda_id}}", "status", ""]
+            }
+          }
+        },
+        {
+          "name": "Rastreio (depois da atualização)",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token_destinatario}}" }] },
+            "url": {
+              "raw": "{{base_url}}/encomendas/{{codigo_rastreio}}/rastreio",
+              "host": ["{{base_url}}"],
+              "path": ["encomendas", "{{codigo_rastreio}}", "rastreio"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

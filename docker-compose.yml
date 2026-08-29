@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ponto2go
+      POSTGRES_PASSWORD: ponto2go
+      POSTGRES_DB: ponto2go
+    ports:
+      - "5433:5432"
+    volumes:
+      - ponto2go_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ponto2go -d ponto2go"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: ./backend
+    command: >
+      sh -c "python manage.py migrate --no-input &&
+             python manage.py seed_demo &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://ponto2go:ponto2go@db:5432/ponto2go
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  ponto2go_pgdata:
