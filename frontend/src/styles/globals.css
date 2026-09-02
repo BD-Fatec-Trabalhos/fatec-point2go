@@ -1,37 +1,173 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+* {
+  box-sizing: border-box;
+}
 
-@layer base {
-  :root {
-    /* Paleta "porto/logística": azul-petróleo profundo como cor primária,
-       âmbar como acento de destaque/alerta, fundo neutro frio. */
-    --background: 210 20% 97%;
-    --foreground: 215 30% 14%;
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  background: #f3f5fa;
+  color: #101828;
+  font-family: "Inter", system-ui, sans-serif;
+}
 
-    --primary: 193 68% 21%;
-    --primary-foreground: 0 0% 100%;
+a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
 
-    --accent: 36 78% 58%;
-    --accent-foreground: 27 60% 22%;
-
-    --muted: 210 20% 93%;
-    --muted-foreground: 215 16% 40%;
-
-    --success: 152 35% 32%;
-    --danger: 6 63% 45%;
-
-    --border: 214 20% 87%;
-    --radius: 0.625rem;
+@keyframes p2gFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
-
-  * {
-    border-color: hsl(var(--border));
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
 
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: "Inter", system-ui, sans-serif;
-  }
+.p2g-fade {
+  animation: p2gFade 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.p2g-card {
+  background: #fff;
+  border: 1px solid #e3e8f1;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.p2g-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 42px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #101828;
+  font-family: "Inter", sans-serif;
+  outline: none;
+}
+
+.p2g-input:focus {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+}
+
+.p2g-btn {
+  border: none;
+  border-radius: 9px;
+  font-family: "Inter", sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.p2g-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.p2g-btn-primary {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.p2g-btn-primary:hover:not(:disabled) {
+  background: #1841b0;
+}
+
+.p2g-btn-outline {
+  background: #fff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.p2g-btn-outline:hover:not(:disabled) {
+  background: #f8fafd;
+}
+
+.p2g-btn-ghost {
+  background: transparent;
+  color: #64748b;
+}
+
+.p2g-btn-ghost:hover:not(:disabled) {
+  color: #101828;
+}
+
+.p2g-link-muted {
+  color: #64748b;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+}
+
+.p2g-link-muted:hover {
+  color: #1d4ed8;
+}
+
+.p2g-row-hover:hover {
+  background: #f8fafd;
+}
+
+.p2g-navlink {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 100%;
+  padding: 0 2px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-family: "Inter", sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  box-sizing: border-box;
+  color: #64748b;
+}
+
+.p2g-navlink:hover {
+  color: #101828;
+}
+
+.p2g-navlink.active {
+  color: #1d4ed8;
+  font-weight: 600;
+  border-bottom-color: #1d4ed8;
+}
+
+.p2g-chip {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.p2g-chip-off {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #94a3b8;
+}
+
+.p2g-chip-off:hover {
+  background: #f8fafd;
+}
+
+.p2g-chip-on {
+  border: 1px solid #1d4ed8;
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.leaflet-container {
+  font-family: "Inter", system-ui, sans-serif;
 }

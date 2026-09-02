@@ -1,16 +1,15 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { Route } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/form";
+import { Button } from "@/components/common/Button";
+import { extrairMensagemErro } from "@/lib/errors";
 
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("admin@pudos.com.br");
-  const [senha, setSenha] = useState("pudos123");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
 
@@ -18,62 +17,78 @@ export function Login() {
     e.preventDefault();
     setErro(null);
     setCarregando(true);
-    const resultado = await login(email, senha);
-    setCarregando(false);
-
-    if (resultado.ok) navigate("/");
-    else setErro(resultado.erro ?? "Não foi possível entrar.");
+    try {
+      await login(email, senha);
+      navigate("/mapa");
+    } catch (err) {
+      setErro(extrairMensagemErro(err, "E-mail ou senha inválidos."));
+    } finally {
+      setCarregando(false);
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="h-9 w-9 rounded-md bg-primary flex items-center justify-center">
-            <Route size={18} className="text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-semibold text-foreground tracking-tight">PUDOs</span>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(180deg,#F7F9FD 0%,#EDF2FA 100%)",
+        fontFamily: "Inter, system-ui, sans-serif",
+        padding: 24,
+        boxSizing: "border-box",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: 392 }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 26 }}>
+          <img src="/point2go-logo-full.png" alt="Point2Go" style={{ width: 210, height: "auto", display: "block" }} />
         </div>
 
-        <div className="rounded-lg border border-border bg-white shadow-sm p-6">
-          <h1 className="font-display text-lg font-semibold text-foreground mb-1">Entrar</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            Acesse o painel de gestão de pontos de retirada.
-          </p>
+        <div className="p2g-card p2g-fade" style={{ boxShadow: "0 24px 48px -16px rgba(11,18,51,0.22)", padding: "36px 32px" }}>
+          <h1 style={{ fontFamily: "Sora, sans-serif", fontSize: 20, fontWeight: 700, color: "#101828", margin: "0 0 4px", textAlign: "center" }}>
+            Entrar
+          </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div>
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
+                E-mail
+              </label>
+              <input
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                className="p2g-input"
               />
             </div>
             <div>
-              <Label htmlFor="senha">Senha</Label>
-              <Input
-                id="senha"
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
+                Senha
+              </label>
+              <input
                 type="password"
+                required
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
-                required
+                className="p2g-input"
               />
             </div>
 
             {erro && (
-              <p className="text-sm text-danger bg-danger/10 rounded-md px-3 py-2">{erro}</p>
+              <p style={{ fontSize: 13, color: "#B91C1C", background: "#FEE2E2", borderRadius: 8, padding: "10px 12px", margin: 0 }}>
+                {erro}
+              </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={carregando}>
+            <Button type="submit" disabled={carregando} style={{ width: "100%", height: 44, marginTop: 4 }}>
               {carregando ? "Entrando..." : "Entrar"}
             </Button>
           </form>
 
-          <p className="text-xs text-muted-foreground mt-5 text-center">
-            Demonstração — use <strong>admin@pudos.com.br</strong> / <strong>pudos123</strong>
+          <p style={{ fontSize: 13, color: "#64748B", margin: "20px 0 0", textAlign: "center" }}>
+            Ainda não tem conta? <Link to="/cadastro" style={{ fontWeight: 600 }}>Cadastre-se</Link>
           </p>
         </div>
       </div>

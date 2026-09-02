@@ -1,202 +1,89 @@
-import { Fragment, useMemo, useState, type FormEvent } from "react";
-import { Plus, Search, ChevronDown, ChevronUp } from "lucide-react";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { Button } from "@/components/ui/button";
-import { Input, Label, Select } from "@/components/ui/form";
-import { Modal } from "@/components/ui/modal";
-import { Badge } from "@/components/ui/badge";
-import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
-import { useAppData } from "@/context/AppDataContext";
-import { STATUS_LABEL, MOVIMENTACAO_LABEL, type Encomenda, type StatusEncomenda } from "@/types";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { useEncomendas } from "@/hooks/useEncomendas";
+import { usePontos } from "@/hooks/usePontos";
+import { STATUS_INFO } from "@/lib/status";
+import type { StatusEncomenda } from "@/types";
 
-const badgeVariantByStatus: Record<StatusEncomenda, "neutral" | "info" | "warning" | "success" | "danger"> = {
-  aguardando_recebimento: "neutral",
-  recebida_no_ponto: "info",
-  disponivel_para_retirada: "warning",
-  retirada: "success",
-  devolvida: "danger",
-};
-
-const vazio = {
-  codigoRastreio: "",
-  destinatarioNome: "",
-  destinatarioDocumento: "",
-  destinatarioTelefone: "",
-  pontoRetiradaId: "",
-};
+function formatData(iso: string) {
+  try {
+    return new Date(iso).toLocaleString("pt-BR");
+  } catch {
+    return iso;
+  }
+}
 
 export function Encomendas() {
-  const { encomendas, pontos, movimentacoes, addEncomenda } = useAppData();
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState(vazio);
-  const [busca, setBusca] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState<StatusEncomenda | "todos">("todos");
-  const [expandido, setExpandido] = useState<string | null>(null);
+  const { encomendas, carregando, erro } = useEncomendas();
+  const { pontos } = usePontos();
+  const [statusFilter, setStatusFilter] = useState<StatusEncomenda | "todos">("todos");
+  const navigate = useNavigate();
 
-  function set<K extends keyof typeof vazio>(key: K, value: string) {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }
+  const pontosPorId = useMemo(() => Object.fromEntries(pontos.map((p) => [p.id, p])), [pontos]);
 
-  const resultado = useMemo(() => {
-    const termo = busca.trim().toLowerCase();
-    return encomendas.filter((e) => {
-      const bateBusca =
-        !termo ||
-        e.codigoRastreio.toLowerCase().includes(termo) ||
-        e.destinatarioNome.toLowerCase().includes(termo);
-      const bateStatus = filtroStatus === "todos" || e.status === filtroStatus;
-      return bateBusca && bateStatus;
-    });
-  }, [encomendas, busca, filtroStatus]);
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    const nova: Encomenda = {
-      id: `e${Date.now()}`,
-      codigoRastreio: form.codigoRastreio,
-      destinatarioNome: form.destinatarioNome,
-      destinatarioDocumento: form.destinatarioDocumento,
-      destinatarioTelefone: form.destinatarioTelefone,
-      pontoRetiradaId: form.pontoRetiradaId,
-      status: "aguardando_recebimento",
-      criadaEm: new Date().toISOString(),
-      atualizadaEm: new Date().toISOString(),
-    };
-    addEncomenda(nova);
-    setForm(vazio);
-    setOpen(false);
-  }
+  const encomendasFiltradas = encomendas.filter(
+    (e) => statusFilter === "todos" || e.status_atual === statusFilter
+  );
 
   return (
-    <AppLayout title="Encomendas" subtitle="Cadastro e consulta de status">
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-4">
-        <div className="flex flex-col sm:flex-row gap-3 flex-1">
-          <div className="relative flex-1 max-w-sm">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por código de rastreio ou destinatário"
-              className="pl-9"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-            />
-          </div>
-          <Select
-            className="sm:w-64"
-            value={filtroStatus}
-            onChange={(e) => setFiltroStatus(e.target.value as StatusEncomenda | "todos")}
-          >
-            <option value="todos">Todos os status</option>
-            {Object.entries(STATUS_LABEL).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </Select>
-        </div>
-        <Button onClick={() => setOpen(true)}>
-          <Plus size={16} /> Nova encomenda
-        </Button>
+    <div style={{ padding: "40px 24px", boxSizing: "border-box", maxWidth: 760, margin: "0 auto" }}>
+      <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as StatusEncomenda | "todos")}
+          className="p2g-input"
+          style={{ height: 40, minWidth: 220, width: "auto" }}
+        >
+          <option value="todos">Todos os status</option>
+          {Object.entries(STATUS_INFO).map(([value, info]) => (
+            <option key={value} value={value}>
+              {info.label}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <Table>
-        <Thead>
-          <Tr>
-            <Th></Th>
-            <Th>Código de rastreio</Th>
-            <Th>Destinatário</Th>
-            <Th>Ponto de retirada</Th>
-            <Th>Status</Th>
-            <Th>Atualizado em</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {resultado.map((enc) => {
-            const ponto = pontos.find((p) => p.id === enc.pontoRetiradaId);
-            const aberto = expandido === enc.id;
-            const historico = movimentacoes
-              .filter((m) => m.encomendaId === enc.id)
-              .sort((a, b) => (a.dataHora < b.dataHora ? 1 : -1));
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {carregando && <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13.5, padding: "40px 0" }}>Carregando...</p>}
+        {erro && <p style={{ textAlign: "center", color: "#B91C1C", fontSize: 13.5, padding: "40px 0" }}>{erro}</p>}
 
-            return (
-              <Fragment key={enc.id}>
-                <Tr className="cursor-pointer" onClick={() => setExpandido(aberto ? null : enc.id)}>
-                  <Td>{aberto ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</Td>
-                  <Td className="font-mono text-xs">{enc.codigoRastreio}</Td>
-                  <Td className="font-medium">{enc.destinatarioNome}</Td>
-                  <Td>{ponto?.nome ?? "—"}</Td>
-                  <Td><Badge variant={badgeVariantByStatus[enc.status]}>{STATUS_LABEL[enc.status]}</Badge></Td>
-                  <Td className="text-xs text-muted-foreground">{new Date(enc.atualizadaEm).toLocaleString("pt-BR")}</Td>
-                </Tr>
-                {aberto && (
-                  <Tr>
-                    <Td colSpan={6} className="bg-muted/30">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-                        Histórico de movimentações
-                      </p>
-                      {historico.length === 0 && (
-                        <p className="text-sm text-muted-foreground">Nenhuma movimentação registrada ainda.</p>
-                      )}
-                      <ul className="space-y-1.5">
-                        {historico.map((m) => (
-                          <li key={m.id} className="text-sm flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            <span className="font-medium">{MOVIMENTACAO_LABEL[m.tipo]}</span>
-                            <span className="text-muted-foreground text-xs font-mono">
-                              {new Date(m.dataHora).toLocaleString("pt-BR")} · {m.responsavel}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </Td>
-                  </Tr>
-                )}
-              </Fragment>
-            );
-          })}
-          {resultado.length === 0 && (
-            <Tr>
-              <Td colSpan={6} className="text-center text-muted-foreground py-8">
-                Nenhuma encomenda encontrada para essa busca.
-              </Td>
-            </Tr>
-          )}
-        </Tbody>
-      </Table>
-
-      <Modal open={open} onClose={() => setOpen(false)} title="Cadastrar encomenda">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="codigoRastreio">Código de rastreio</Label>
-            <Input id="codigoRastreio" required value={form.codigoRastreio} onChange={(e) => set("codigoRastreio", e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="pontoRetiradaId">Ponto de retirada de destino</Label>
-            <Select id="pontoRetiradaId" required value={form.pontoRetiradaId} onChange={(e) => set("pontoRetiradaId", e.target.value)}>
-              <option value="">Selecione...</option>
-              {pontos.map((p) => (
-                <option key={p.id} value={p.id}>{p.nome}</option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="destinatarioNome">Nome do destinatário</Label>
-            <Input id="destinatarioNome" required value={form.destinatarioNome} onChange={(e) => set("destinatarioNome", e.target.value)} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="destinatarioDocumento">CPF</Label>
-              <Input id="destinatarioDocumento" required value={form.destinatarioDocumento} onChange={(e) => set("destinatarioDocumento", e.target.value)} />
+        {!carregando &&
+          !erro &&
+          encomendasFiltradas.map((enc) => (
+            <div
+              key={enc.id}
+              className="p2g-card"
+              style={{ padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}
+            >
+              <div>
+                <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 13, color: "#475569", margin: "0 0 4px" }}>
+                  {enc.codigo_rastreio}
+                </p>
+                <p style={{ fontSize: 13.5, color: "#101828", fontWeight: 600, margin: "0 0 2px" }}>
+                  {enc.ponto ? pontosPorId[enc.ponto]?.nome ?? "—" : "—"}
+                </p>
+                <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>Criada em {formatData(enc.data_criacao)}</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+                <StatusBadge status={enc.status_atual} />
+                <button
+                  onClick={() => navigate(`/rastreio?codigo=${encodeURIComponent(enc.codigo_rastreio)}`)}
+                  className="p2g-btn p2g-btn-outline p2g-row-hover"
+                  style={{ height: 36, padding: "0 14px", color: "#1D4ED8" }}
+                >
+                  Ver rastreio
+                </button>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="destinatarioTelefone">Telefone</Label>
-              <Input id="destinatarioTelefone" required value={form.destinatarioTelefone} onChange={(e) => set("destinatarioTelefone", e.target.value)} />
-            </div>
-          </div>
+          ))}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button type="submit">Salvar encomenda</Button>
-          </div>
-        </form>
-      </Modal>
-    </AppLayout>
+        {!carregando && !erro && encomendasFiltradas.length === 0 && (
+          <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13.5, padding: "40px 0", margin: 0 }}>
+            Nenhuma encomenda encontrada.
+          </p>
+        )}
+      </div>
+    </div>
   );
 }

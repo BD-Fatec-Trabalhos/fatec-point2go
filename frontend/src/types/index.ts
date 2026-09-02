@@ -1,98 +1,95 @@
-// Entidades do sistema, conforme a seção 3.2 do TG
-// (Usuário, Parceiro, Ponto de retirada, Endereço, Encomenda,
-// Status da encomenda, Movimentação)
+// Formas reais devolvidas pela API do backend (Django REST Framework).
 
 export type Endereco = {
-  cep: string;
-  logradouro: string;
+  id?: number;
+  rua: string;
   numero: string;
   bairro: string;
   cidade: string;
   uf: string;
+  cep: string;
+  latitude?: string | null;
+  longitude?: string | null;
 };
 
-export type Parceiro = {
-  id: string;
-  nomeFantasia: string;
-  razaoSocial: string;
-  cnpj: string;
-  responsavel: string;
-  telefone: string;
-  email: string;
-  endereco: Endereco;
-  ativo: boolean;
-  criadoEm: string;
+export type AreaRestricao = {
+  id: number;
+  nome: string;
+  cidade: string;
+  bairros_atendidos: string;
+  motivo: string;
 };
-
-export type DiaSemana = "seg" | "ter" | "qua" | "qui" | "sex" | "sab" | "dom";
 
 export type PontoRetirada = {
-  id: string;
+  id: number;
   nome: string;
-  parceiroId: string;
   endereco: Endereco;
-  capacidade: number;
-  ocupacaoAtual: number;
-  horarioAbertura: string; // "08:00"
-  horarioFechamento: string; // "18:00"
-  diasFuncionamento: DiaSemana[];
-  disponivel: boolean;
+  area_restricao: AreaRestricao | null;
+  horario_funcionamento: string;
+  capacidade_total: number;
+  capacidade_ocupada: number;
+  ativo: boolean;
 };
 
 export type StatusEncomenda =
-  | "aguardando_recebimento"
-  | "recebida_no_ponto"
-  | "disponivel_para_retirada"
-  | "retirada"
-  | "devolvida";
-
-export const STATUS_LABEL: Record<StatusEncomenda, string> = {
-  aguardando_recebimento: "Aguardando recebimento",
-  recebida_no_ponto: "Recebida no ponto",
-  disponivel_para_retirada: "Disponível para retirada",
-  retirada: "Retirada pelo destinatário",
-  devolvida: "Devolvida",
-};
+  | "em_transito"
+  | "aguardando_retirada"
+  | "retirada_confirmada"
+  | "devolvido";
 
 export type Encomenda = {
-  id: string;
-  codigoRastreio: string;
-  destinatarioNome: string;
-  destinatarioDocumento: string;
-  destinatarioTelefone: string;
-  pontoRetiradaId: string;
-  status: StatusEncomenda;
-  criadaEm: string;
-  atualizadaEm: string;
-};
-
-export type TipoMovimentacao =
-  | "entrada_no_ponto"
-  | "transferencia"
-  | "retirada_destinatario"
-  | "devolucao";
-
-export const MOVIMENTACAO_LABEL: Record<TipoMovimentacao, string> = {
-  entrada_no_ponto: "Entrada no ponto",
-  transferencia: "Transferência entre pontos",
-  retirada_destinatario: "Retirada pelo destinatário",
-  devolucao: "Devolução",
+  id: number;
+  codigo_rastreio: string;
+  destinatario: number;
+  ponto: number | null;
+  status_atual: StatusEncomenda;
+  data_criacao: string;
+  prazo_guarda: string | null;
 };
 
 export type Movimentacao = {
-  id: string;
-  encomendaId: string;
-  tipo: TipoMovimentacao;
-  pontoOrigemId?: string;
-  pontoDestinoId?: string;
-  responsavel: string;
-  observacao?: string;
-  dataHora: string;
+  id: number;
+  data_hora: string;
+  tipo_evento: string;
+  descricao: string;
 };
 
+export type EncomendaRastreio = Encomenda & {
+  movimentacoes: Movimentacao[];
+};
+
+export type TipoUsuario = "destinatario" | "parceiro";
+
 export type Usuario = {
-  id: string;
-  nome: string;
+  userId: number;
   email: string;
-  perfil: "admin" | "parceiro" | "operador";
+  tipo: TipoUsuario;
+};
+
+export type DadosCadastro = {
+  username: string;
+  password: string;
+  email: string;
+  tipo: TipoUsuario;
+  first_name: string;
+  last_name: string;
+  telefone?: string;
+  cpf: string;
+};
+
+export type NovoPontoPayload = {
+  nome: string;
+  endereco: {
+    rua: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    uf: string;
+    cep: string;
+    latitude?: string;
+    longitude?: string;
+  };
+  horario_funcionamento: string;
+  capacidade_total: number;
+  area_restricao_id?: number;
 };

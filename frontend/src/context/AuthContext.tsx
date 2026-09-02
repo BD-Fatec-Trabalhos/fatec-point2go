@@ -1,39 +1,91 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import type { Usuario } from "@/types";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { authApi } from "@/lib/api/auth";
+import {
+  clearSession,
+  getAccessToken,
+  getRefreshToken,
+  getStoredEmail,
+  saveSession,
+} from "@/lib/api/client";
+import { decodeJwtPayload, isExpired } from "@/lib/jwt";
+import type { DadosCadastro, Usuario } from "@/types";
 
 type AuthContextValue = {
   usuario: Usuario | null;
-  login: (email: string, senha: string) => Promise<{ ok: boolean; erro?: string }>;
+  carregando: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  cadastrarELogar: (dados: DadosCadastro) => Promise<void>;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// Usuário de demonstração. Quando o endpoint de autenticação do backend
-// existir, substituir esta função por uma chamada real via `api.post(...)`.
-const USUARIO_DEMO: Usuario = {
-  id: "u1",
-  nome: "Ana Ferreira",
-  email: "admin@pudos.com.br",
-  perfil: "admin",
-};
+function usuarioFromToken(access: string, email: string): Usuario {
+  const payload = decodeJwtPayload(access);
+  return { userId: payload.user_id, tipo: payload.tipo, email };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [carregando, setCarregando] = useState(true);
 
-  const login: AuthContextValue["login"] = async (email, senha) => {
-    await new Promise((r) => setTimeout(r, 400)); // simula latência de rede
+  useEffect(() => {
+    async function bootstrap() {
+      const access = getAccessToken();
+      const email = getStoredEmail();
+      if (!access || !email) {
+        setCarregando(false);
+        return;
+      }
 
-    if (email.trim().toLowerCase() === USUARIO_DEMO.email && senha === "pudos123") {
-      setUsuario(USUARIO_DEMO);
-      return { ok: true };
+      const payload = decodeJwtPayload(access);
+      if (!isExpired(payload)) {
+        setUsuario(usuarioFromToken(access, email));
+        setCarregando(false);
+        return;
+      }
+
+      const refresh = getRefreshToken();
+      if (!refresh) {
+        clearSession();
+        setCarregando(false);
+        return;
+      }
+
+      try {
+        const { access: novoAccess } = await authApi.refresh(refresh);
+        saveSession(novoAccess, refresh, email);
+        setUsuario(usuarioFromToken(novoAccess, email));
+      } catch {
+        clearSession();
+      } finally {
+        setCarregando(false);
+      }
     }
-    return { ok: false, erro: "E-mail ou senha inválidos." };
+    bootstrap();
+  }, []);
+
+  const login: AuthContextValue["login"] = async (email, password) => {
+    const { access, refresh } = await authApi.login(email, password);
+    saveSession(access, refresh, email);
+    setUsuario(usuarioFromToken(access, email));
   };
 
-  const logout = () => setUsuario(null);
+  const cadastrarELogar: AuthContextValue["cadastrarELogar"] = async (dados) => {
+    await authApi.registrar(dados);
+    await login(dados.email, dados.password);
+  };
 
-  return <AuthContext.Provider value={{ usuario, login, logout }}>{children}</AuthContext.Provider>;
+  const logout = () => {
+    clearSession();
+    setUsuario(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ usuario, carregando, login, cadastrarELogar, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

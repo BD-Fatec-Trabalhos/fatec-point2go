@@ -67,7 +67,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"parceiro_demo\",\n  \"password\": \"senha12345\"\n}"
+              "raw": "{\n  \"email\": \"parceiro@teste.com\",\n  \"password\": \"senha12345\"\n}"
             },
             "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
           }
@@ -93,7 +93,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"cliente_demo\",\n  \"password\": \"senha12345\"\n}"
+              "raw": "{\n  \"email\": \"cliente@teste.com\",\n  \"password\": \"senha12345\"\n}"
             },
             "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
           }

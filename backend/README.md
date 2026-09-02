@@ -35,12 +35,12 @@ Os apps:
 
 ## Usuários de teste
 
-O seed sempre cria dois usuários:
+O seed sempre cria dois usuários. O login é feito por e-mail (`USERNAME_FIELD = "email"` no model `Usuario`), não por username:
 
-| username | senha | tipo |
+| e-mail | senha | tipo |
 |---|---|---|
-| `parceiro_demo` | `senha12345` | parceiro |
-| `cliente_demo` | `senha12345` | destinatário |
+| `parceiro@teste.com` | `senha12345` | parceiro |
+| `cliente@teste.com` | `senha12345` | destinatário |
 
 O `parceiro_demo` já entra com dois pontos de retirada cadastrados (um deles vinculado a uma área de restrição, pra mostrar esse campo funcionando), e o `cliente_demo` já tem duas encomendas de exemplo: uma ainda aguardando retirada, outra já com status de retirada confirmada — essa segunda já dá pra ver o histórico com duas movimentações geradas pela trigger.
 
