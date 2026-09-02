@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { extrairMensagemErro } from "@/lib/errors";
 import type { TipoUsuario } from "@/types";
 
@@ -54,125 +57,110 @@ export function Cadastro() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(180deg,#F7F9FD 0%,#EDF2FA 100%)",
-        fontFamily: "Inter, system-ui, sans-serif",
-        padding: 24,
-        boxSizing: "border-box",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 392 }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 26 }}>
-          <img src="/point2go-logo-full.png" alt="Point2Go" style={{ width: 210, height: "auto", display: "block" }} />
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#F7F9FD] to-[#EDF2FA] p-6">
+      <div className="w-full max-w-[460px]">
+        <div className="mb-8 flex justify-center">
+          <img src="/point2go-logo-full.png" alt="Point2Go" className="block h-auto w-[230px]" />
         </div>
 
-        <div className="p2g-card p2g-fade" style={{ boxShadow: "0 24px 48px -16px rgba(11,18,51,0.22)", padding: "36px 32px" }}>
-          <h1 style={{ fontFamily: "Sora, sans-serif", fontSize: 20, fontWeight: 700, color: "#101828", margin: "0 0 4px", textAlign: "center" }}>
-            Criar conta
-          </h1>
+        <Card className="animate-fade-up shadow-card px-10 py-11">
+          <CardHeader>
+            <CardTitle className="text-2xl">Criar conta</CardTitle>
+            <CardDescription className="mt-1.5">Leva menos de um minuto.</CardDescription>
+          </CardHeader>
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
-                Nome completo
-              </label>
-              <input required value={nome} onChange={(e) => setNome(e.target.value)} className="p2g-input" />
-            </div>
-            <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
-                E-mail
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="p2g-input"
-              />
-            </div>
-            <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
-                CPF
-              </label>
-              <input
-                required
-                maxLength={14}
-                placeholder="Somente números"
-                value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
-                className="p2g-input"
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
-                Tipo de conta
-              </label>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => setTipo("destinatario")}
-                  className={`p2g-chip ${tipo === "destinatario" ? "p2g-chip-on" : "p2g-chip-off"}`}
-                >
-                  Destinatário
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTipo("parceiro")}
-                  className={`p2g-chip ${tipo === "parceiro" ? "p2g-chip-on" : "p2g-chip-off"}`}
-                >
-                  Parceiro
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
               <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
-                  Senha
-                </label>
-                <input
-                  type="password"
+                <Label htmlFor="nome">Nome completo</Label>
+                <Input id="nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="email">E-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
                   required
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  className="p2g-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
-                  Confirmar
-                </label>
-                <input
-                  type="password"
+                <Label htmlFor="cpf">CPF</Label>
+                <Input
+                  id="cpf"
                   required
-                  value={confirmarSenha}
-                  onChange={(e) => setConfirmarSenha(e.target.value)}
-                  className="p2g-input"
+                  maxLength={14}
+                  placeholder="Somente números"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
                 />
               </div>
-            </div>
 
-            {erro && (
-              <p style={{ fontSize: 13, color: "#B91C1C", background: "#FEE2E2", borderRadius: 8, padding: "10px 12px", margin: 0 }}>
-                {erro}
-              </p>
-            )}
+              <div>
+                <Label>Tipo de conta</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={tipo === "destinatario" ? "default" : "outline"}
+                    onClick={() => setTipo("destinatario")}
+                    className="rounded-full"
+                  >
+                    Destinatário
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={tipo === "parceiro" ? "default" : "outline"}
+                    onClick={() => setTipo("parceiro")}
+                    className="rounded-full"
+                  >
+                    Parceiro
+                  </Button>
+                </div>
+              </div>
 
-            <Button type="submit" disabled={carregando} style={{ width: "100%", height: 44, marginTop: 4 }}>
-              {carregando ? "Criando conta..." : "Criar conta"}
-            </Button>
-          </form>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="senha">Senha</Label>
+                  <Input
+                    id="senha"
+                    type="password"
+                    required
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmar">Confirmar</Label>
+                  <Input
+                    id="confirmar"
+                    type="password"
+                    required
+                    value={confirmarSenha}
+                    onChange={(e) => setConfirmarSenha(e.target.value)}
+                  />
+                </div>
+              </div>
 
-          <p style={{ fontSize: 13, color: "#64748B", margin: "20px 0 0", textAlign: "center" }}>
-            Já tem conta? <Link to="/login" style={{ fontWeight: 600 }}>Entrar</Link>
-          </p>
-        </div>
+              {erro && (
+                <p className="m-0 rounded-lg bg-destructive-bg px-3.5 py-2.5 text-sm text-destructive">{erro}</p>
+              )}
+
+              <Button type="submit" disabled={carregando} className="mt-1 w-full">
+                {carregando ? "Criando conta..." : "Criar conta"}
+              </Button>
+            </form>
+
+            <p className="mt-5 text-center text-sm text-muted-foreground">
+              Já tem conta?{" "}
+              <Link to="/login" className="font-semibold text-primary hover:underline">
+                Entrar
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

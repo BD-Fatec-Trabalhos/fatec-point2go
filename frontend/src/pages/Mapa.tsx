@@ -1,6 +1,8 @@
-import { Search } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PontosMap } from "@/components/map/PontosMap";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { usePontos } from "@/hooks/usePontos";
 import type { PontoRetirada } from "@/types";
 
@@ -12,7 +14,7 @@ function ocupacaoInfo(p: PontoRetirada) {
     pctCapped,
     lotado,
     disponivel: p.ativo && !lotado,
-    barColor: pct >= 100 ? "#DC2626" : pct > 75 ? "#F59E0B" : undefined,
+    barClass: pct >= 100 ? "bg-destructive" : pct > 75 ? "bg-warning" : "bg-gradient-to-r from-primary to-secondary",
   };
 }
 
@@ -32,147 +34,97 @@ export function Mapa() {
   const selecionado = pontos.find((p) => p.id === selectedId) ?? null;
 
   return (
-    <div style={{ position: "relative", height: "calc(100vh - 68px)", width: "100%", overflow: "hidden" }}>
+    <div className="relative h-[calc(100vh-68px)] w-full overflow-hidden">
       <PontosMap pontos={pontosFiltrados} selectedId={selectedId} onSelect={setSelectedId} />
 
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          width: 380,
-          background: "#fff",
-          borderRight: "1px solid #E3E8F1",
-          boxShadow: "8px 0 28px -16px rgba(11,18,51,0.25)",
-          zIndex: 5,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
+      <div className="shadow-panel absolute inset-y-0 left-0 z-[5] flex w-[380px] flex-col overflow-hidden border-r border-border-card bg-card">
         {!selecionado ? (
           <>
-            <div style={{ padding: "18px 18px 12px", borderBottom: "1px solid #EEF1F6", flexShrink: 0 }}>
-              <p style={{ fontFamily: "Sora, sans-serif", fontSize: 15, fontWeight: 700, color: "#101828", margin: "0 0 10px" }}>
-                Pontos de retirada
-              </p>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "#94A3B8", display: "flex", pointerEvents: "none" }}>
+            <div className="flex-shrink-0 border-b border-[#EEF1F6] px-[18px] pb-3 pt-[18px]">
+              <p className="font-display m-0 mb-2.5 text-[15px] font-bold text-foreground">Pontos de retirada</p>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-2.5 top-1/2 flex -translate-y-1/2 text-muted-foreground">
                   <Search size={14} />
                 </span>
-                <input
+                <Input
                   placeholder="Buscar por nome ou bairro"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="p2g-input"
-                  style={{ height: 38, padding: "0 12px 0 32px", fontSize: 13 }}
+                  className="h-[38px] pl-8 text-[13px]"
                 />
               </div>
             </div>
-            <div style={{ flex: 1, overflowY: "auto", padding: 10 }}>
-              {carregando && (
-                <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, padding: "24px 8px", margin: 0 }}>Carregando...</p>
-              )}
-              {erro && (
-                <p style={{ textAlign: "center", color: "#B91C1C", fontSize: 13, padding: "24px 8px", margin: 0 }}>{erro}</p>
-              )}
-              {!carregando && !erro && pontosFiltrados.map((p) => {
-                const { disponivel } = ocupacaoInfo(p);
-                return (
-                  <div
-                    key={p.id}
-                    onClick={() => setSelectedId(p.id)}
-                    className="p2g-row-hover"
-                    style={{ padding: 12, borderRadius: 12, cursor: "pointer", marginBottom: 4 }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
-                      <p style={{ fontSize: 13.5, fontWeight: 600, color: "#101828", margin: 0 }}>{p.nome}</p>
-                      <span
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "50%",
-                          background: disponivel ? "#38BDF8" : "#DC2626",
-                          flexShrink: 0,
-                          marginTop: 4,
-                        }}
-                      />
+            <div className="flex-1 overflow-y-auto p-2.5">
+              {carregando && <p className="m-0 px-2 py-6 text-center text-[13px] text-muted-foreground">Carregando...</p>}
+              {erro && <p className="m-0 px-2 py-6 text-center text-[13px] text-destructive">{erro}</p>}
+              {!carregando &&
+                !erro &&
+                pontosFiltrados.map((p) => {
+                  const { disponivel } = ocupacaoInfo(p);
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => setSelectedId(p.id)}
+                      className="mb-1 cursor-pointer rounded-xl p-3 hover:bg-accent"
+                    >
+                      <div className="mb-1 flex items-start justify-between gap-2">
+                        <p className="m-0 text-[13.5px] font-semibold text-foreground">{p.nome}</p>
+                        <span
+                          className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${disponivel ? "bg-secondary" : "bg-destructive"}`}
+                        />
+                      </div>
+                      <p className="m-0 text-xs text-muted-foreground">
+                        {p.endereco.bairro}, {p.endereco.cidade}/{p.endereco.uf}
+                      </p>
                     </div>
-                    <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>
-                      {p.endereco.bairro}, {p.endereco.cidade}/{p.endereco.uf}
-                    </p>
-                  </div>
-                );
-              })}
+                  );
+                })}
               {!carregando && !erro && pontosFiltrados.length === 0 && (
-                <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, padding: "24px 8px", margin: 0 }}>
-                  Nenhum ponto encontrado.
-                </p>
+                <p className="m-0 px-2 py-6 text-center text-[13px] text-muted-foreground">Nenhum ponto encontrado.</p>
               )}
             </div>
           </>
         ) : (
-          <div style={{ padding: "16px 18px", overflowY: "auto" }}>
+          <div className="overflow-y-auto px-[18px] py-4">
             <button
               onClick={() => setSelectedId(null)}
-              className="p2g-link-muted"
-              style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 600, marginBottom: 14 }}
+              className="mb-3.5 flex items-center gap-1.5 text-[12.5px] font-semibold text-muted-foreground hover:text-primary"
             >
-              ← Voltar à lista
+              <ArrowLeft size={13} />
+              Voltar à lista
             </button>
 
             {(() => {
-              const { pctCapped, lotado, disponivel, barColor } = ocupacaoInfo(selecionado);
+              const { pctCapped, lotado, disponivel, barClass } = ocupacaoInfo(selecionado);
               return (
                 <>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
-                    <p style={{ fontFamily: "Sora, sans-serif", fontSize: 16, fontWeight: 700, color: "#101828", margin: 0 }}>
-                      {selecionado.nome}
-                    </p>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        padding: "3px 10px",
-                        borderRadius: 99,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        background: disponivel ? "#DCFCE7" : "#FEE2E2",
-                        color: disponivel ? "#15803D" : "#B91C1C",
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                      }}
-                    >
+                  <div className="mb-1 flex items-start justify-between gap-2">
+                    <p className="font-display m-0 text-base font-bold text-foreground">{selecionado.nome}</p>
+                    <Badge variant={disponivel ? "success" : "destructive"}>
                       {disponivel ? "Disponível" : "Lotado"}
-                    </span>
+                    </Badge>
                   </div>
 
-                  <p style={{ fontSize: 13.5, color: "#475569", lineHeight: 1.5, margin: "0 0 16px" }}>
+                  <p className="m-0 mb-4 text-[13.5px] leading-relaxed text-[#475569]">
                     {selecionado.endereco.rua}, {selecionado.endereco.numero} — {selecionado.endereco.bairro},{" "}
                     {selecionado.endereco.cidade}/{selecionado.endereco.uf}
                   </p>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "#94A3B8", marginBottom: 5 }}>
+                  <div className="mb-1.5 flex justify-between text-[11.5px] text-muted-foreground">
                     <span>Ocupação</span>
-                    <span style={{ fontFamily: "ui-monospace, monospace" }}>
+                    <span className="font-mono">
                       {selecionado.capacidade_ocupada}/{selecionado.capacidade_total}
                     </span>
                   </div>
-                  <div style={{ height: 7, borderRadius: 99, background: "#EEF1F6", overflow: "hidden", marginBottom: 16 }}>
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${pctCapped}%`,
-                        background: barColor ?? "linear-gradient(90deg,#1D4ED8,#38BDF8)",
-                      }}
-                    />
+                  <div className="mb-4 h-[7px] overflow-hidden rounded-full bg-[#EEF1F6]">
+                    <div className={`h-full ${barClass}`} style={{ width: `${pctCapped}%` }} />
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#94A3B8" }}>
+                  <div className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
                     {selecionado.horario_funcionamento}
                   </div>
                   {lotado && (
-                    <p style={{ fontSize: 12, color: "#94A3B8", marginTop: 16 }}>
+                    <p className="mt-4 text-xs text-muted-foreground">
                       Este ponto está com a capacidade máxima no momento.
                     </p>
                   )}

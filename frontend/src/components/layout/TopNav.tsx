@@ -1,53 +1,29 @@
 import { Building2, LogOut, MapPin, Package, Route } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `p2g-navlink${isActive ? " active" : ""}`;
+  cn(
+    "flex h-full items-center gap-1.5 border-b-2 border-transparent px-0.5 text-[13.5px]",
+    isActive ? "border-primary font-semibold text-primary" : "font-medium text-muted-foreground hover:text-foreground"
+  );
 
 export function TopNav() {
   const { usuario, logout } = useAuth();
   const inicial = usuario?.email?.[0]?.toUpperCase() ?? "?";
 
   return (
-    <header
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 30,
-        height: 68,
-        background: "#fff",
-        borderBottom: "1px solid #E3E8F1",
-        boxSizing: "border-box",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "stretch",
-          padding: "0 24px",
-          boxSizing: "border-box",
-        }}
-      >
-        <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 9 }}>
-          <img src="/point2go-pin.png" alt="" style={{ width: 25, height: 25, display: "block" }} />
-          <span
-            style={{
-              fontFamily: "Sora, sans-serif",
-              fontWeight: 700,
-              fontSize: 16.5,
-              color: "#0B1233",
-              letterSpacing: "-0.01em",
-              whiteSpace: "nowrap",
-            }}
-          >
+    <header className="sticky top-0 z-30 box-border h-[68px] border-b border-border-card bg-card">
+      <div className="box-border flex h-full w-full items-stretch px-6">
+        <div className="flex flex-shrink-0 items-center gap-2.5">
+          <img src="/point2go-pin.png" alt="" className="block h-[25px] w-[25px]" />
+          <span className="font-display whitespace-nowrap text-[16.5px] font-bold tracking-tight text-[#0B1233]">
             Point2Go
           </span>
         </div>
 
-        <nav style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 26, height: "100%" }}>
+        <nav className="flex h-full flex-1 items-center justify-center gap-6">
           <NavLink to="/mapa" className={linkClass}>
             <MapPin size={15} />
             Mapa de pontos
@@ -68,26 +44,11 @@ export function TopNav() {
           )}
         </nav>
 
-        <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 16 }}>
-          <button onClick={logout} title="Sair" className="p2g-link-muted" style={{ display: "flex", alignItems: "center" }}>
+        <div className="flex flex-shrink-0 items-center gap-4">
+          <button onClick={logout} title="Sair" className="flex items-center text-muted-foreground hover:text-destructive">
             <LogOut size={15} />
           </button>
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: "50%",
-              background: "#0B1233",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "Sora, sans-serif",
-              fontWeight: 700,
-              fontSize: 12.5,
-              flexShrink: 0,
-            }}
-          >
+          <div className="font-display flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-full bg-[#0B1233] text-[12.5px] font-bold text-white">
             {inicial}
           </div>
         </div>

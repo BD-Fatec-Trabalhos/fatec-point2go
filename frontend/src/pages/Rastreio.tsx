@@ -1,10 +1,13 @@
 import { Check } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useEncomendas } from "@/hooks/useEncomendas";
 import { usePontos } from "@/hooks/usePontos";
 import { encomendasApi } from "@/lib/api/encomendas";
+import { cn } from "@/lib/utils";
 import { STATUS_INFO, STATUS_ORDER } from "@/lib/status";
 import type { EncomendaRastreio } from "@/types";
 
@@ -52,24 +55,23 @@ export function Rastreio() {
   const currentIdx = resultado ? STATUS_ORDER.indexOf(resultado.status_atual) : -1;
 
   return (
-    <div style={{ padding: "40px 24px", boxSizing: "border-box", maxWidth: 760, margin: "0 auto" }}>
-      <div className="p2g-card" style={{ padding: 22, marginBottom: 20, display: "flex", gap: 10 }}>
-        <input
+    <div className="mx-auto box-border max-w-[760px] px-6 py-10">
+      <Card className="mb-5 flex gap-2.5 p-5">
+        <Input
           placeholder="Digite o código de rastreio"
           value={codigo}
           onChange={(e) => setCodigo(e.target.value)}
-          className="p2g-input"
-          style={{ flex: 1, fontFamily: "ui-monospace, monospace" }}
+          className="flex-1 font-mono"
         />
-        <Button onClick={() => codigo.trim() && rastrear(codigo.trim())} disabled={carregando} style={{ flexShrink: 0 }}>
+        <Button onClick={() => codigo.trim() && rastrear(codigo.trim())} disabled={carregando} className="flex-shrink-0">
           Rastrear
         </Button>
-      </div>
+      </Card>
 
       {!buscado && (
         <>
-          <p style={{ fontSize: 12.5, color: "#94A3B8", margin: "0 0 10px" }}>Suas encomendas recentes</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <p className="mb-2.5 text-[12.5px] text-muted-foreground">Suas encomendas recentes</p>
+          <div className="flex flex-wrap gap-2">
             {encomendas.map((e) => (
               <button
                 key={e.id}
@@ -77,18 +79,7 @@ export function Rastreio() {
                   setCodigo(e.codigo_rastreio);
                   rastrear(e.codigo_rastreio);
                 }}
-                className="p2g-row-hover"
-                style={{
-                  height: 32,
-                  padding: "0 14px",
-                  border: "1px solid #E2E8F0",
-                  borderRadius: 99,
-                  background: "#fff",
-                  fontFamily: "ui-monospace, monospace",
-                  fontSize: 12,
-                  color: "#475569",
-                  cursor: "pointer",
-                }}
+                className="h-8 cursor-pointer rounded-full border border-input bg-card px-3.5 font-mono text-xs text-[#475569] hover:bg-accent"
               >
                 {e.codigo_rastreio}
               </button>
@@ -98,51 +89,49 @@ export function Rastreio() {
       )}
 
       {naoEncontrada && (
-        <div className="p2g-card" style={{ padding: 32, textAlign: "center" }}>
-          <p style={{ fontSize: 13.5, color: "#94A3B8", margin: 0 }}>Não encontramos nenhuma encomenda com esse código.</p>
-        </div>
+        <Card className="p-8 text-center">
+          <p className="m-0 text-[13.5px] text-muted-foreground">Não encontramos nenhuma encomenda com esse código.</p>
+        </Card>
       )}
 
       {resultado && (
-        <div className="p2g-card" style={{ padding: 26 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22, gap: 12 }}>
+        <Card className="p-[26px]">
+          <div className="mb-[22px] flex items-start justify-between gap-3">
             <div>
-              <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 12.5, color: "#94A3B8", margin: "0 0 4px" }}>
-                {resultado.codigo_rastreio}
-              </p>
-              <p style={{ fontFamily: "Sora, sans-serif", fontSize: 16, fontWeight: 700, color: "#101828", margin: 0 }}>
+              <p className="m-0 mb-1 font-mono text-[12.5px] text-muted-foreground">{resultado.codigo_rastreio}</p>
+              <p className="font-display m-0 text-base font-bold text-foreground">
                 {resultado.ponto ? pontosPorId[resultado.ponto]?.nome ?? "—" : "—"}
               </p>
             </div>
           </div>
 
           {isDevolvido ? (
-            <div style={{ background: "#FEE2E2", borderRadius: 10, padding: "14px 16px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#DC2626", flexShrink: 0 }} />
-              <span style={{ fontSize: 13.5, fontWeight: 600, color: "#B91C1C" }}>Devolvido ao remetente</span>
+            <div className="mb-6 flex items-center gap-2.5 rounded-[10px] bg-destructive-bg px-4 py-3.5">
+              <span className="h-2 w-2 flex-shrink-0 rounded-full bg-destructive" />
+              <span className="text-[13.5px] font-semibold text-destructive">Devolvido ao remetente</span>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", marginBottom: 26 }}>
+            <div className="mb-[26px] flex items-center">
               {STATUS_ORDER.map((status, idx) => {
                 const done = idx <= currentIdx;
                 const hasLine = idx < STATUS_ORDER.length - 1;
                 const lineDone = idx < currentIdx;
                 return (
-                  <div key={status} style={{ display: "flex", alignItems: "center", flex: 1 }}>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0, width: 84 }}>
+                  <div key={status} className="flex flex-1 items-center">
+                    <div className="flex w-[84px] flex-shrink-0 flex-col items-center gap-2">
                       {done ? (
-                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#1D4ED8", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                           <Check size={14} strokeWidth={2.5} />
                         </div>
                       ) : (
-                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#F1F5F9", border: "2px solid #E2E8F0", flexShrink: 0 }} />
+                        <div className="h-7 w-7 flex-shrink-0 rounded-full border-2 border-input bg-muted" />
                       )}
-                      <p style={{ fontSize: 11, textAlign: "center", lineHeight: 1.3, margin: 0, color: "#64748B", fontWeight: 600 }}>
+                      <p className="m-0 text-center text-[11px] font-semibold leading-tight text-[#64748B]">
                         {STATUS_INFO[status].label}
                       </p>
                     </div>
                     {hasLine && (
-                      <div style={{ flex: 1, height: 2, margin: "0 -4px 22px", background: lineDone ? "#1D4ED8" : "#E2E8F0" }} />
+                      <div className={cn("mx-[-4px] mb-[22px] h-0.5 flex-1", lineDone ? "bg-primary" : "bg-border")} />
                     )}
                   </div>
                 );
@@ -150,21 +139,17 @@ export function Rastreio() {
             </div>
           )}
 
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "#94A3B8", margin: "0 0 12px" }}>
-            Histórico
-          </p>
-          <div style={{ position: "relative", paddingLeft: 18, borderLeft: "1px solid #E3E8F1", display: "flex", flexDirection: "column", gap: 16 }}>
+          <p className="m-0 mb-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Histórico</p>
+          <div className="relative flex flex-col gap-4 border-l border-border-card pl-[18px]">
             {resultado.movimentacoes.map((m) => (
-              <div key={m.id} style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: -23, top: 3, width: 9, height: 9, borderRadius: "50%", background: "#1D4ED8", border: "2px solid #fff", boxShadow: "0 0 0 1px #E3E8F1" }} />
-                <p style={{ fontSize: 13.5, fontWeight: 600, color: "#101828", margin: "0 0 2px" }}>{m.descricao}</p>
-                <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 11.5, color: "#94A3B8", margin: 0 }}>
-                  {formatData(m.data_hora)}
-                </p>
+              <div key={m.id} className="relative">
+                <span className="absolute -left-[23px] top-[3px] h-2.5 w-2.5 rounded-full border-2 border-card bg-primary shadow-[0_0_0_1px_var(--border-card)]" />
+                <p className="m-0 mb-0.5 text-[13.5px] font-semibold text-foreground">{m.descricao}</p>
+                <p className="m-0 font-mono text-[11.5px] text-muted-foreground">{formatData(m.data_hora)}</p>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

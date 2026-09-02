@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { StatusBadge } from "@/components/common/StatusBadge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEncomendas } from "@/hooks/useEncomendas";
 import { usePontos } from "@/hooks/usePontos";
 import { STATUS_INFO } from "@/lib/status";
@@ -13,6 +16,13 @@ function formatData(iso: string) {
     return iso;
   }
 }
+
+const BADGE_VARIANT: Record<StatusEncomenda, "neutral" | "info" | "warning" | "success" | "destructive"> = {
+  em_transito: "neutral",
+  aguardando_retirada: "warning",
+  retirada_confirmada: "success",
+  devolvido: "destructive",
+};
 
 export function Encomendas() {
   const { encomendas, carregando, erro } = useEncomendas();
@@ -27,61 +37,53 @@ export function Encomendas() {
   );
 
   return (
-    <div style={{ padding: "40px 24px", boxSizing: "border-box", maxWidth: 760, margin: "0 auto" }}>
-      <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as StatusEncomenda | "todos")}
-          className="p2g-input"
-          style={{ height: 40, minWidth: 220, width: "auto" }}
-        >
-          <option value="todos">Todos os status</option>
-          {Object.entries(STATUS_INFO).map(([value, info]) => (
-            <option key={value} value={value}>
-              {info.label}
-            </option>
-          ))}
-        </select>
+    <div className="mx-auto box-border max-w-[760px] px-6 py-10">
+      <div className="mb-[18px] flex gap-2.5">
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusEncomenda | "todos")}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os status</SelectItem>
+            {Object.entries(STATUS_INFO).map(([value, info]) => (
+              <SelectItem key={value} value={value}>
+                {info.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {carregando && <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13.5, padding: "40px 0" }}>Carregando...</p>}
-        {erro && <p style={{ textAlign: "center", color: "#B91C1C", fontSize: 13.5, padding: "40px 0" }}>{erro}</p>}
+      <div className="flex flex-col gap-3">
+        {carregando && <p className="py-10 text-center text-[13.5px] text-muted-foreground">Carregando...</p>}
+        {erro && <p className="py-10 text-center text-[13.5px] text-destructive">{erro}</p>}
 
         {!carregando &&
           !erro &&
           encomendasFiltradas.map((enc) => (
-            <div
-              key={enc.id}
-              className="p2g-card"
-              style={{ padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}
-            >
+            <Card key={enc.id} className="flex items-center justify-between gap-4 px-5 py-[18px]">
               <div>
-                <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 13, color: "#475569", margin: "0 0 4px" }}>
-                  {enc.codigo_rastreio}
-                </p>
-                <p style={{ fontSize: 13.5, color: "#101828", fontWeight: 600, margin: "0 0 2px" }}>
+                <p className="m-0 mb-1 font-mono text-[13px] text-[#475569]">{enc.codigo_rastreio}</p>
+                <p className="m-0 mb-0.5 text-[13.5px] font-semibold text-foreground">
                   {enc.ponto ? pontosPorId[enc.ponto]?.nome ?? "—" : "—"}
                 </p>
-                <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>Criada em {formatData(enc.data_criacao)}</p>
+                <p className="m-0 text-xs text-muted-foreground">Criada em {formatData(enc.data_criacao)}</p>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
-                <StatusBadge status={enc.status_atual} />
-                <button
+              <div className="flex flex-shrink-0 items-center gap-3.5">
+                <Badge variant={BADGE_VARIANT[enc.status_atual]}>{STATUS_INFO[enc.status_atual].label}</Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => navigate(`/rastreio?codigo=${encodeURIComponent(enc.codigo_rastreio)}`)}
-                  className="p2g-btn p2g-btn-outline p2g-row-hover"
-                  style={{ height: 36, padding: "0 14px", color: "#1D4ED8" }}
                 >
                   Ver rastreio
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
           ))}
 
         {!carregando && !erro && encomendasFiltradas.length === 0 && (
-          <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13.5, padding: "40px 0", margin: 0 }}>
-            Nenhuma encomenda encontrada.
-          </p>
+          <p className="m-0 py-10 text-center text-[13.5px] text-muted-foreground">Nenhuma encomenda encontrada.</p>
         )}
       </div>
     </div>

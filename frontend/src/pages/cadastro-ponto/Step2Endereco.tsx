@@ -1,4 +1,7 @@
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { WizardStepper } from "./WizardStepper";
 
 type Endereco = { cep: string; numero: string; logradouro: string; bairro: string; cidade: string; uf: string };
@@ -10,60 +13,63 @@ type Props = {
   onNext: () => void;
 };
 
-function Campo({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>{label}</label>
-      {children}
-    </div>
-  );
-}
-
 export function Step2Endereco({ endereco, onChange, onBack, onNext }: Props) {
   const preenchido = endereco.cep && endereco.numero && endereco.logradouro && endereco.bairro && endereco.cidade && endereco.uf;
 
   return (
-    <div style={{ padding: "40px 24px", boxSizing: "border-box", maxWidth: 640, margin: "0 auto" }}>
+    <div className="mx-auto box-border max-w-[640px] px-6 py-10">
       <WizardStepper step={2} />
-      <div className="p2g-card" style={{ padding: 28 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Campo label="CEP">
-            <input required value={endereco.cep} onChange={(e) => onChange("cep", e.target.value)} className="p2g-input" style={{ height: 40 }} />
-          </Campo>
-          <Campo label="Número">
-            <input required value={endereco.numero} onChange={(e) => onChange("numero", e.target.value)} className="p2g-input" style={{ height: 40 }} />
-          </Campo>
-          <div style={{ gridColumn: "span 2" }}>
-            <Campo label="Logradouro">
-              <input required value={endereco.logradouro} onChange={(e) => onChange("logradouro", e.target.value)} className="p2g-input" style={{ height: 40 }} />
-            </Campo>
+      <Card className="p-7">
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="cep">CEP</Label>
+              <Input id="cep" required value={endereco.cep} onChange={(e) => onChange("cep", e.target.value)} className="h-10" />
+            </div>
+            <div>
+              <Label htmlFor="numero">Número</Label>
+              <Input id="numero" required value={endereco.numero} onChange={(e) => onChange("numero", e.target.value)} className="h-10" />
+            </div>
+            <div className="col-span-2">
+              <Label htmlFor="logradouro">Logradouro</Label>
+              <Input
+                id="logradouro"
+                required
+                value={endereco.logradouro}
+                onChange={(e) => onChange("logradouro", e.target.value)}
+                className="h-10"
+              />
+            </div>
+            <div>
+              <Label htmlFor="bairro">Bairro</Label>
+              <Input id="bairro" required value={endereco.bairro} onChange={(e) => onChange("bairro", e.target.value)} className="h-10" />
+            </div>
+            <div>
+              <Label htmlFor="cidade">Cidade</Label>
+              <Input id="cidade" required value={endereco.cidade} onChange={(e) => onChange("cidade", e.target.value)} className="h-10" />
+            </div>
+            <div>
+              <Label htmlFor="uf">UF</Label>
+              <Input
+                id="uf"
+                required
+                maxLength={2}
+                value={endereco.uf}
+                onChange={(e) => onChange("uf", e.target.value.toUpperCase())}
+                className="h-10 uppercase"
+              />
+            </div>
           </div>
-          <Campo label="Bairro">
-            <input required value={endereco.bairro} onChange={(e) => onChange("bairro", e.target.value)} className="p2g-input" style={{ height: 40 }} />
-          </Campo>
-          <Campo label="Cidade">
-            <input required value={endereco.cidade} onChange={(e) => onChange("cidade", e.target.value)} className="p2g-input" style={{ height: 40 }} />
-          </Campo>
-          <Campo label="UF">
-            <input
-              required
-              maxLength={2}
-              value={endereco.uf}
-              onChange={(e) => onChange("uf", e.target.value.toUpperCase())}
-              className="p2g-input"
-              style={{ height: 40, textTransform: "uppercase" }}
-            />
-          </Campo>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24 }}>
-          <Button variant="outline" onClick={onBack} style={{ height: 40, padding: "0 18px" }}>
-            Voltar
-          </Button>
-          <Button onClick={onNext} disabled={!preenchido} style={{ height: 40 }}>
-            Continuar
-          </Button>
-        </div>
-      </div>
+          <div className="mt-6 flex justify-between">
+            <Button type="button" variant="outline" onClick={onBack} className="h-10 px-4">
+              Voltar
+            </Button>
+            <Button onClick={onNext} disabled={!preenchido} className="h-10">
+              Continuar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

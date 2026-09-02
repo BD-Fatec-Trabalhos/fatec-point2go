@@ -1,5 +1,8 @@
 import type { FormEvent } from "react";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { DIAS } from "@/lib/horario";
 import { WizardStepper } from "./WizardStepper";
 
@@ -38,68 +41,80 @@ export function Step3HorariosCapacidade({
   }
 
   return (
-    <div style={{ padding: "40px 24px", boxSizing: "border-box", maxWidth: 640, margin: "0 auto" }}>
+    <div className="mx-auto box-border max-w-[640px] px-6 py-10">
       <WizardStepper step={3} />
-      <div className="p2g-card" style={{ padding: 28 }}>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
-              Capacidade (nº de encomendas)
-            </label>
-            <input
-              type="number"
-              min={1}
-              required
-              value={capacidade}
-              onChange={(e) => onChangeCapacidade(e.target.value)}
-              className="p2g-input"
-              style={{ height: 40 }}
-            />
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-            <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>Abertura</label>
-              <input type="time" required value={horarioAbertura} onChange={(e) => onChangeAbertura(e.target.value)} className="p2g-input" style={{ height: 40 }} />
+      <Card className="p-7">
+        <CardContent>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <Label htmlFor="capacidade">Capacidade (nº de encomendas)</Label>
+              <Input
+                id="capacidade"
+                type="number"
+                min={1}
+                required
+                value={capacidade}
+                onChange={(e) => onChangeCapacidade(e.target.value)}
+                className="h-10"
+              />
             </div>
-            <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>Fechamento</label>
-              <input type="time" required value={horarioFechamento} onChange={(e) => onChangeFechamento(e.target.value)} className="p2g-input" style={{ height: 40 }} />
+            <div className="mb-5 grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="abertura">Abertura</Label>
+                <Input
+                  id="abertura"
+                  type="time"
+                  required
+                  value={horarioAbertura}
+                  onChange={(e) => onChangeAbertura(e.target.value)}
+                  className="h-10"
+                />
+              </div>
+              <div>
+                <Label htmlFor="fechamento">Fechamento</Label>
+                <Input
+                  id="fechamento"
+                  type="time"
+                  required
+                  value={horarioFechamento}
+                  onChange={(e) => onChangeFechamento(e.target.value)}
+                  className="h-10"
+                />
+              </div>
             </div>
-          </div>
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 8 }}>
-              Dias de funcionamento
-            </label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {DIAS.map((d) => (
-                <button
-                  key={d.value}
-                  type="button"
-                  onClick={() => onToggleDia(d.value)}
-                  className={`p2g-chip ${diasSel.includes(d.value) ? "p2g-chip-on" : "p2g-chip-off"}`}
-                >
-                  {d.label}
-                </button>
-              ))}
+            <div className="mb-6">
+              <Label>Dias de funcionamento</Label>
+              <div className="flex flex-wrap gap-2">
+                {DIAS.map((d) => (
+                  <Button
+                    key={d.value}
+                    type="button"
+                    size="sm"
+                    variant={diasSel.includes(d.value) ? "default" : "outline"}
+                    onClick={() => onToggleDia(d.value)}
+                    className="rounded-lg"
+                  >
+                    {d.label}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {erro && (
-            <p style={{ fontSize: 13, color: "#B91C1C", background: "#FEE2E2", borderRadius: 8, padding: "10px 12px", margin: "0 0 16px" }}>
-              {erro}
-            </p>
-          )}
+            {erro && (
+              <p className="mb-4 rounded-lg bg-destructive-bg px-3.5 py-2.5 text-sm text-destructive">{erro}</p>
+            )}
 
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Button type="button" variant="outline" onClick={onBack} style={{ height: 40, padding: "0 18px" }}>
-              Voltar
-            </Button>
-            <Button type="submit" disabled={enviando || diasSel.length === 0} style={{ height: 40 }}>
-              {enviando ? "Enviando..." : "Concluir cadastro"}
-            </Button>
-          </div>
-        </form>
-      </div>
+            <div className="flex justify-between">
+              <Button type="button" variant="outline" onClick={onBack} className="h-10 px-4">
+                Voltar
+              </Button>
+              <Button type="submit" disabled={enviando || diasSel.length === 0} className="h-10">
+                {enviando ? "Enviando..." : "Concluir cadastro"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
